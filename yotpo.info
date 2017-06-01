@@ -1,0 +1,10 @@
+name = Yotpo API Integration
+description = Provides basic integration with the Yotpo API.
+core = 7.x
+
+package = Development
+
+dependencies[] = libraries
+dependencies[] = variable
+
+configure = admin/config/services/yotpo
