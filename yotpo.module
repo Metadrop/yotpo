@@ -9,13 +9,13 @@
  * Implements hook_menu().
  */
 function yotpo_menu() {
+  $items = array();
   $items['admin/config/services/yotpo'] = array(
     'title' => 'Yotpo',
     'description' => 'Configure settings associated with Yotpo.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('yotpo_admin_settings_form', NULL),
+    'page arguments' => array('variable_group_form', 'yotpo'),
     'access arguments' => array('administer site configuration'),
-    'file' => 'yotpo.admin.inc',
   );
   return $items;
 }
@@ -78,8 +78,8 @@ function yotpo_load() {
  */
 function yotpo_get_instance() {
   if (yotpo_load()) {
-    $id = variable_get('commerce_yotpo_id');
-    $secret = variable_get('commerce_yotpo_secret');
+    $id = variable_get('commerce_yotpo_api_id');
+    $secret = variable_get('commerce_yotpo_api_secret');
     $yotpo = new Yotpo($id, $secret);
     return $yotpo;
   }
