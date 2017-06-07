@@ -20,9 +20,9 @@ function yotpo_variable_group_info() {
  */
 function yotpo_variable_info($options) {
 
-  $variable['commerce_yotpo_api_id'] = array(
-    'title' => t('Yotpo API ID', array(), $options),
-    'description' => t('Your Yotpo API ID.', array(), $options),
+  $variable['commerce_yotpo_api_key'] = array(
+    'title' => t('Yotpo API Key', array(), $options),
+    'description' => t("Your Yotpo API Key. Visit <a href=\"@yotpo-support\">Yotpo Support</a> to learn more.", array('@yotpo-support' => 'https://support.yotpo.com/en/article/finding-your-app-key-and-your-secret-key'), $options),
     'type' => 'string',
     'default' => t('', array(), $options),
     'group' => 'yotpo',
@@ -30,7 +30,7 @@ function yotpo_variable_info($options) {
 
   $variable['commerce_yotpo_api_secret'] = array(
     'title' => t('Yotpo API Secret', array(), $options),
-    'description' => t('Your Yotpo API Secret.', array(), $options),
+    'description' => t("Your Yotpo API Secret. Visit <a href=\"@yotpo-support\">Yotpo Support</a> to learn more.", array('@yotpo-support' => 'https://support.yotpo.com/en/article/finding-your-app-key-and-your-secret-key'), $options),
     'type' => 'string',
     'default' => t('', array(), $options),
     'group' => 'yotpo',
