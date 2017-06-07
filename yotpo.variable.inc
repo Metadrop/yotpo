@@ -25,6 +25,7 @@ function yotpo_variable_info($options) {
     'description' => t('Your Yotpo API ID.', array(), $options),
     'type' => 'string',
     'default' => t('', array(), $options),
+    'group' => 'yotpo',
   );
 
   $variable['commerce_yotpo_api_secret'] = array(
@@ -32,6 +33,7 @@ function yotpo_variable_info($options) {
     'description' => t('Your Yotpo API Secret.', array(), $options),
     'type' => 'string',
     'default' => t('', array(), $options),
+    'group' => 'yotpo',
   );
 
   return $variable;
