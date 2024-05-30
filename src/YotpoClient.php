@@ -205,18 +205,20 @@ class YotpoClient {
    */
   public function createProduct(array $product, $update = FALSE) {
     $yotpoProducts = $this->getYotpoProducts();
-    $product_yotpo_array = [
-      'product' => [
-        'name' => $product['name'] ?? '',
-        'description' => $product['description'] ?? '',
-        'url' => $product['url'],
-        'price' => $product['price'],
-      ],
+    $product_attributes = [
+      'name' => $product['name'] ?? NULL,
+      'description' => $product['description'] ?? NULL,
+      'url' => $product['url'] ?? NULL,
+      'price' => $product['price'] ?? NULL,
     ];
 
-    if (!in_array($product['id'], array_keys($yotpoProducts))) {
-      $product_yotpo_array['product']['external_id'] = $product['id'];
-      $product_yotpo_array['product']['sku'] = $product['id'];
+    $product_yotpo_array = [
+      'product' => array_filter($product_attributes),
+    ];
+
+    if (!in_array($product['external_id'], array_keys($yotpoProducts))) {
+      $product_yotpo_array['product']['external_id'] = $product['external_id'];
+      $product_yotpo_array['product']['sku'] = $product['sku'] ?? NULL;
       $product_json = json_encode($product_yotpo_array);
       $options = [
         'body' => $product_json,
@@ -229,7 +231,7 @@ class YotpoClient {
       $options = [
         'body' => $product_json,
       ];
-      $this->callYotpoApi('products/' . $yotpoProducts[$product['id']]['yotpo_id'], 'PATCH', $options);
+      $this->callYotpoApi('products/' . $yotpoProducts[$product['external_id']]['yotpo_id'], 'PATCH', $options);
       return TRUE;
     }
     return FALSE;
@@ -239,8 +241,9 @@ class YotpoClient {
   /**
    * Yotpo products.
    */
-  public function getYotpoProducts() {
-    if (empty($this->yotpoProducts)) {
+  public function getYotpoProducts($update_list = FALSE) {
+    if (empty($this->yotpoProducts) || $update_list) {
+
       $products = $this->callYotpoApi('products');
 
       $products_yotpo = $products['products'] ?? [];
