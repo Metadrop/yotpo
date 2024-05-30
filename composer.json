@@ -1,0 +1,30 @@
+{
+  "name": "drupal/yotpo",
+  "description": "Client to connect with Yotpo API.",
+  "keywords": ["yotpo", "API", "Drupal"],
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://drupal.org/project/yotpo",
+  "authors": [
+    {
+      "name": "Eduardo Morales Alberti",
+      "homepage": "https://www.drupal.org/u/Eduardo%20Morales%20Alberti",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Metadrop",
+      "homepage": "https://www.drupal.org/metadrop",
+      "role": "Maintainer"
+    },
+    {
+      "name": "Contributors",
+      "homepage": "https://www.drupal.org/node/2883106/committers",
+      "role": "Contributor"
+    }
+  ],
+  "support": {
+    "issues": "https://drupal.org/project/issues/yotpo",
+    "source": "https://git.drupalcode.org/project/yotpo"
+  },
+  "require": { }
+}

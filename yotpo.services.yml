@@ -1,0 +1,13 @@
+services:
+  yotpo.client:
+    class: Drupal\yotpo\YotpoClient
+    arguments: [
+      '@config.factory',
+      '@logger.channel.yotpo',
+      '@http_client_factory'
+    ]
+
+  logger.channel.yotpo:
+    class: Drupal\Core\Logger\LoggerChannel
+    factory: logger.factory:get
+    arguments: ['yotpo']

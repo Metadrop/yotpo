@@ -1,0 +1,10 @@
+yotpo.settings:
+  type: config_object
+  label: 'Yotpo settings.'
+  mapping:
+    api_key:
+      type: string
+      label: 'Api key'
+    api_secret:
+      type: string
+      label: 'Api key'

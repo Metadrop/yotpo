@@ -1,0 +1,6 @@
+name: Yotpo API Integration
+type: module
+description: Client to connect with Yotpo API
+package: Development
+core_version_requirement: ^10
+dependencies: [ ]

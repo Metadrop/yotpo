@@ -1,0 +1,6 @@
+services:
+  yotpo.commands:
+    class: Drupal\yotpo\Commands\YotpoCommands
+    tags:
+      - { name: drush.command }
+    arguments: ['@yotpo.client']
