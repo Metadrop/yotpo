@@ -31,7 +31,7 @@ class YotpoCommands extends DrushCommands {
    * @usage yotpo:get
    *   Get all products from yotpo.
    *
-   * @command yotpo:get
+   * @command yotpo:get-products
    */
   public function getYotpoProducts() {
     $products = $this->yotpoClient->getYotpoProducts();
@@ -80,6 +80,19 @@ class YotpoCommands extends DrushCommands {
       $product_yotpo = $products_yotpo[$product['external_id']] ?? [];
       $this->logger->notice('Product updated: {product}', ['product' => print_r($product_yotpo, TRUE)]);
     }
+  }
+
+  /**
+   * Get products yotpo reviews.
+   *
+   * @usage yotpo:get-reviews
+   *   Get all products from yotpo.
+   *
+   * @command yotpo:get-reviews
+   */
+  public function getYotpoReviews() {
+    $reviews = $this->yotpoClient->getProductReviews();
+    $this->logger->notice('Reviews products yotpo: {reviews}', ['reviews' => print_r($reviews, TRUE)]);
   }
 
 }

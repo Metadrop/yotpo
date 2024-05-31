@@ -30,11 +30,18 @@ class YotpoClient {
   protected string $accessToken;
 
   /**
-   * Base url.
+   * Base url stores.
    *
    * @var string
    */
-  protected string $baseUrl = 'https://api.yotpo.com/core/v3/stores';
+  protected string $baseUrlStores = 'https://api.yotpo.com/core/v3/stores';
+
+  /**
+   * Base url reviews.
+   *
+   * @var string
+   */
+  protected string $baseUrlReviews = 'https://api.yotpo.com/v1/apps';
 
   /**
    * Logger.
@@ -145,16 +152,18 @@ class YotpoClient {
     string $endpoint,
     string $method = 'GET',
     array $additional_options = [],
+    bool $access_token = NULL,
+    string $type = 'store',
   ): array {
-    if (!str_contains($endpoint, 'access')) {
+    if ($access_token) {
       $this->setupCredentials();
     }
 
     $options = $this->addDefaultOptions($additional_options);
 
     try {
-
-      $response = $this->httpClient->request($method, $this->baseUrl . '/' . $this->config->get('api_key') . '/' . $endpoint, $options);
+      $base_url = $type == 'store' ? $this->baseUrlStores : $this->baseUrlReviews;
+      $response = $this->httpClient->request($method, $base_url . '/' . $this->config->get('api_key') . '/' . $endpoint, $options);
       $response_body = (string) $response->getBody();
     }
     catch (\Exception $e) {
@@ -203,7 +212,7 @@ class YotpoClient {
   /**
    * Create product.
    */
-  public function createProduct(array $product, $update = FALSE) {
+  public function createProduct(array $product, bool $update = NULL) {
     $yotpoProducts = $this->getYotpoProducts();
     $product_attributes = [
       'name' => $product['name'] ?? NULL,
@@ -223,7 +232,7 @@ class YotpoClient {
       $options = [
         'body' => $product_json,
       ];
-      $this->callYotpoApi('products', 'POST', $options);
+      $this->callYotpoApi('products', 'POST', $options, TRUE);
       return TRUE;
     }
     elseif ($update) {
@@ -231,7 +240,7 @@ class YotpoClient {
       $options = [
         'body' => $product_json,
       ];
-      $this->callYotpoApi('products/' . $yotpoProducts[$product['external_id']]['yotpo_id'], 'PATCH', $options);
+      $this->callYotpoApi('products/' . $yotpoProducts[$product['external_id']]['yotpo_id'], 'PATCH', $options, TRUE);
       return TRUE;
     }
     return FALSE;
@@ -241,10 +250,10 @@ class YotpoClient {
   /**
    * Yotpo products.
    */
-  public function getYotpoProducts($update_list = FALSE) {
+  public function getYotpoProducts(bool $update_list = NULL) {
     if (empty($this->yotpoProducts) || $update_list) {
 
-      $products = $this->callYotpoApi('products');
+      $products = $this->callYotpoApi('products', access_token: TRUE);
 
       $products_yotpo = $products['products'] ?? [];
       $list = [];
@@ -256,6 +265,23 @@ class YotpoClient {
       $this->yotpoProducts = $list;
     }
     return $this->yotpoProducts;
+  }
+
+  /**
+   * Products reviews.
+   */
+  public function getProductReviews() {
+    $options = [
+      'query' => [
+        'count' => 100,
+        'page' => 1,
+      ],
+    ];
+
+    $response = $this->callYotpoApi('bottom_lines', additional_options: $options, type: 'reviews');
+    $reviews = $response['response']['bottomlines'] ?? [];
+
+    return $reviews;
   }
 
 }
