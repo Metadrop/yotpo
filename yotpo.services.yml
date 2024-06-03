@@ -4,7 +4,9 @@ services:
     arguments: [
       '@config.factory',
       '@logger.channel.yotpo',
-      '@http_client_factory'
+      '@http_client_factory',
+      '@cache.default',
+      '@datetime.time',
     ]
 
   logger.channel.yotpo:

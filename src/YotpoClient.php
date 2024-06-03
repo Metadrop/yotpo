@@ -2,6 +2,8 @@
 
 namespace Drupal\yotpo;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Http\ClientFactory;
@@ -14,6 +16,11 @@ use Psr\Log\LogLevel;
  * Yotpo client.
  */
 class YotpoClient {
+
+  /**
+   * Cache time reviews.
+   */
+  const CACHE_TIME_REVIEWS = 300;
 
   /**
    * The HTTP client.
@@ -78,16 +85,34 @@ class YotpoClient {
   protected array $yotpoProducts;
 
   /**
+   * Cache.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  private CacheBackendInterface $cache;
+
+  /**
+   * Time.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  private TimeInterface $time;
+
+  /**
    * Constructs a Client object.
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
     LoggerInterface $logger,
     ClientFactory $http_client_factory,
+    CacheBackendInterface $cache,
+    TimeInterface $time,
   ) {
     $this->config = $configFactory->get('yotpo.settings');
     $this->httpClient = $http_client_factory->fromOptions();
     $this->logger = $logger;
+    $this->cache = $cache;
+    $this->time = $time;
   }
 
   /**
@@ -154,32 +179,46 @@ class YotpoClient {
     array $additional_options = [],
     bool $access_token = NULL,
     string $type = 'store',
+    bool $cache = NULL,
+    string $cid = NULL,
+    int $cache_time = NULL,
   ): array {
-    if ($access_token) {
-      $this->setupCredentials();
-    }
-
-    $options = $this->addDefaultOptions($additional_options);
-
-    try {
-      $base_url = $type == 'store' ? $this->baseUrlStores : $this->baseUrlReviews;
-      $response = $this->httpClient->request($method, $base_url . '/' . $this->config->get('api_key') . '/' . $endpoint, $options);
-      $response_body = (string) $response->getBody();
-    }
-    catch (\Exception $e) {
-      // 7. Handle exceptions.
-      if ($e instanceof BadResponseException) {
-        $error_response = json_decode((string) $e->getResponse()->getBody());
-        $exception = $this->getExceptionForError($e, $error_response);
+    $cached_response = $cache ? $this->cache->get($cid) : NULL;
+    if (empty($cached_response) || empty($cached_response->data)) {
+      if ($access_token) {
+        $this->setupCredentials();
       }
-      else {
-        $exception = $e;
+
+      $options = $this->addDefaultOptions($additional_options);
+
+      try {
+        $base_url = $type == 'store' ? $this->baseUrlStores : $this->baseUrlReviews;
+        $response = $this->httpClient->request($method, $base_url . '/' . $this->config->get('api_key') . '/' . $endpoint, $options);
+        $response_body = (string) $response->getBody();
+        $this->cache->set(
+          $cid,
+          $response_body,
+          $this->time->getCurrentTime() + $cache_time
+        );
       }
-      $this->logger->log(LogLevel::ERROR, sprintf('Failed %s. Exception: %s', $endpoint, $exception->getMessage()));
+      catch (\Exception $e) {
+        // 7. Handle exceptions.
+        if ($e instanceof BadResponseException) {
+          $error_response = json_decode((string) $e->getResponse()->getBody());
+          $exception = $this->getExceptionForError($e, $error_response);
+        }
+        else {
+          $exception = $e;
+        }
+        $this->logger->log(LogLevel::ERROR, sprintf('Failed %s. Exception: %s', $endpoint, $exception->getMessage()));
 
-      throw $exception;
+        throw $exception;
+      }
+
     }
-
+    else {
+      $response_body = $cached_response->data;
+    }
     $response_array = json_decode($response_body, TRUE) ?? [];
     return $response_array;
   }
@@ -278,10 +317,19 @@ class YotpoClient {
       ],
     ];
 
-    $response = $this->callYotpoApi('bottom_lines', additional_options: $options, type: 'reviews');
+    $response = $this->callYotpoApi(
+      'bottom_lines',
+      additional_options: $options,
+      type: 'reviews',
+      cache: TRUE,
+      cid: 'yotopo_reviews',
+      cache_time: self::CACHE_TIME_REVIEWS);
     $reviews = $response['response']['bottomlines'] ?? [];
-
-    return $reviews;
+    $list = [];
+    foreach ($reviews as $review) {
+      $list[$review['domain_key']] = $review;
+    }
+    return $list;
   }
 
 }
