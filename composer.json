@@ -26,5 +26,8 @@
     "issues": "https://drupal.org/project/issues/yotpo",
     "source": "https://git.drupalcode.org/project/yotpo"
   },
-  "require": { }
+  "require": {
+    "drupal/core": "^10.2",
+    "php": ">=8.1"
+  }
 }
