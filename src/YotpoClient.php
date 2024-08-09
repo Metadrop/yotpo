@@ -310,25 +310,31 @@ class YotpoClient {
    * Products reviews.
    */
   public function getProductReviews() {
+    $page = 1;
     $options = [
       'query' => [
         'count' => 100,
-        'page' => 1,
       ],
     ];
-
-    $response = $this->callYotpoApi(
-      'bottom_lines',
-      additional_options: $options,
-      type: 'reviews',
-      cache: TRUE,
-      cid: 'yotopo_reviews',
-      cache_time: self::CACHE_TIME_REVIEWS);
-    $reviews = $response['response']['bottomlines'] ?? [];
     $list = [];
-    foreach ($reviews as $review) {
-      $list[$review['domain_key']] = $review;
-    }
+    // Pagination reviews.
+    do {
+      $options['query']['page'] = $page;
+      $response = $this->callYotpoApi(
+        'bottom_lines',
+        additional_options: $options,
+        type: 'reviews',
+        cache: TRUE,
+        cid: 'yotopo_reviews_p' . $page,
+        cache_time: self::CACHE_TIME_REVIEWS);
+      $reviews = $response['response']['bottomlines'] ?? [];
+
+      foreach ($reviews as $review) {
+        $list[$review['domain_key']] = $review;
+      }
+      $page++;
+    } while (!empty($reviews));
+
     return $list;
   }
 
